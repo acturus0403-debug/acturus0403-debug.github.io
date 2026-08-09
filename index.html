@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Vint'hess — Achète, vends et donne une seconde vie à tes vêtements</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<style>
+  :root{
+    --teal:#09B1BA;
+    --teal-dark:#078e95;
+    --ink:#182C3A;
+  }
+  *{font-family:'Poppins',sans-serif;}
+  body{background:#f5f6f7;}
+  ::-webkit-scrollbar{height:8px;width:8px;}
+  ::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:99px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  .cat-scroll::-webkit-scrollbar{display:none;}
+  .cat-scroll{-ms-overflow-style:none;scrollbar-width:none;}
+
+  .brand-text{color:var(--teal);}
+  .btn-teal{background:var(--teal);color:#fff;transition:.2s;}
+  .btn-teal:hover{background:var(--teal-dark);}
+  .ring-teal:focus{outline:none;box-shadow:0 0 0 3px rgba(9,177,186,.25);border-color:var(--teal);}
+
+  .chip{transition:.15s;white-space:nowrap;}
+  .chip.active{background:var(--ink);color:#fff;}
+
+  .card-hover{transition:.25s ease;}
+  .card-hover:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(0,0,0,.10);}
+
+  .fav-btn svg{transition:.15s;}
+  .fav-btn.liked svg{fill:#ff4066;stroke:#ff4066;}
+
+  .modal-enter{animation:modalIn .25s ease forwards;}
+  @keyframes modalIn{from{opacity:0;transform:translateY(30px) scale(.97);}to{opacity:1;transform:translateY(0) scale(1);}}
+  .fade-in{animation:fadeIn .3s ease forwards;}
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+
+  .toast{animation:toastIn .3s ease forwards, toastOut .3s ease forwards 2.7s;}
+  @keyframes toastIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes toastOut{to{opacity:0;transform:translateY(-10px);}}
+
+  .upload-zone.dragover{background:#e6fbfa;border-color:var(--teal);}
+
+  .condition-card.selected{border-color:var(--teal);background:#e6fbfa;}
+  .condition-card.selected .cond-dot{background:var(--teal);border-color:var(--teal);}
+  .cond-dot{width:16px;height:16px;border-radius:99px;border:2px solid #cbd5e1;flex-shrink:0;}
+
+  .line-clamp-2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .line-clamp-3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+
+  @media (max-width:767px){
+    body{padding-bottom:70px;}
+  }
+</style>
+</head>
+<body class="text-[var(--ink)]">
+
+<!-- ============ HEADER ============ -->
+<header class="sticky top-0 z-40 bg-white border-b border-gray-200">
+  <div class="max-w-7xl mx-auto px-3 sm:px-6">
+    <div class="flex items-center gap-2 sm:gap-4 h-16">
+      <!-- Logo -->
+      <a href="#" class="flex items-center gap-1.5 shrink-0">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" class="shrink-0">
+          <path d="M12 2 3 7v6c0 5 4 8.5 9 9 5-.5 9-4 9-9V7l-9-5Z" fill="#09B1BA"/>
+          <path d="M8.5 12.2 11 14.7l4.7-5.4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="text-xl sm:text-2xl font-extrabold tracking-tight">Vint<span class="brand-text">'</span>hess</span>
+      </a>
+
+      <!-- Search desktop -->
+      <div class="hidden md:flex flex-1 max-w-xl mx-4 relative">
+        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="searchInput" type="text" placeholder="Rechercher un article, une marque..." class="w-full bg-gray-100 rounded-full pl-10 pr-4 py-2.5 text-sm focus:bg-white border border-transparent focus:border-[var(--teal)] ring-teal">
+      </div>
+
+      <div class="flex-1 md:hidden"></div>
+
+      <!-- Actions -->
+      <button id="mobileSearchBtn" class="md:hidden p-2 text-gray-600" aria-label="Rechercher">
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
+
+      <button class="hidden sm:flex p-2 text-gray-600 hover:text-[var(--teal)]" aria-label="Favoris">
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
+      </button>
+      <button class="hidden sm:flex p-2 text-gray-600 hover:text-[var(--teal)]" aria-label="Messages">
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg>
+      </button>
+
+      <button id="openSellBtnHeader" class="btn-teal font-semibold text-sm px-4 sm:px-5 py-2.5 rounded-full shadow-sm shrink-0">
+        + Vendre
+      </button>
+    </div>
+
+    <!-- Mobile search bar -->
+    <div id="mobileSearchWrap" class="hidden pb-3 relative md:hidden">
+      <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="searchInputMobile" type="text" placeholder="Rechercher un article, une marque..." class="w-full bg-gray-100 rounded-full pl-10 pr-4 py-2.5 text-sm focus:bg-white border border-transparent focus:border-[var(--teal)] ring-teal">
+    </div>
+  </div>
+
+  <!-- Category chips -->
+  <div class="border-t border-gray-100">
+    <div id="chipBar" class="cat-scroll max-w-7xl mx-auto px-3 sm:px-6 flex gap-2 overflow-x-auto py-2.5">
+      <!-- injected by JS -->
+    </div>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="relative overflow-hidden" style="background:linear-gradient(120deg,#09B1BA 0%,#0bc7cf 55%,#7be0d9 100%);">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-20 flex flex-col md:flex-row items-center gap-8 relative z-10">
+    <div class="flex-1 text-white text-center md:text-left">
+      <h1 class="text-3xl sm:text-5xl font-extrabold leading-tight mb-4">Vide ton dressing,<br class="hidden sm:block"> fais des heureux 💚</h1>
+      <p class="text-white/90 text-base sm:text-lg mb-6 max-w-lg mx-auto md:mx-0">Achète et vends des vêtements, chaussures et accessoires de seconde main en quelques clics sur Vint'hess.</p>
+      <div class="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
+        <button id="openSellBtnHero" class="bg-white text-[var(--teal-dark)] font-bold px-6 py-3 rounded-full shadow-lg hover:scale-105 transition">Déposer un article</button>
+        <a href="#listings" class="border-2 border-white/80 text-white font-semibold px-6 py-3 rounded-full hover:bg-white/10 transition">Découvrir les articles</a>
+      </div>
+    </div>
+    <div class="flex-1 hidden md:grid grid-cols-3 gap-3 max-w-md">
+      <img src="https://images.pexels.com/photos/8743972/pexels-photo-8743972.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940" class="rounded-2xl object-cover h-32 w-full shadow-xl rotate-[-4deg]">
+      <img src="https://images.pexels.com/photos/19882430/pexels-photo-19882430.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940" class="rounded-2xl object-cover h-40 w-full shadow-xl mt-6">
+      <img src="https://images.pexels.com/photos/27127406/pexels-photo-27127406.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940" class="rounded-2xl object-cover h-32 w-full shadow-xl rotate-[4deg]">
+      <img src="https://images.pexels.com/photos/38561616/pexels-photo-38561616.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940" class="rounded-2xl object-cover h-40 w-full shadow-xl -mt-4 col-span-1">
+      <img src="https://images.pexels.com/photos/19915596/pexels-photo-19915596.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940" class="rounded-2xl object-cover h-28 w-full shadow-xl mt-2 col-span-2">
+    </div>
+  </div>
+  <svg class="absolute -bottom-1 left-0 w-full text-[#f5f6f7]" viewBox="0 0 1440 60" fill="currentColor"><path d="M0 30 C 360 60 1080 0 1440 30 L1440 60 L0 60 Z"/></svg>
+</section>
+
+<!-- ============ STATS ============ -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 -mt-2 relative z-10">
+  <div class="grid grid-cols-3 gap-3 sm:gap-6 bg-white rounded-2xl shadow-sm py-5 px-3 text-center">
+    <div>
+      <p class="text-lg sm:text-2xl font-extrabold brand-text" id="statItems">0</p>
+      <p class="text-xs sm:text-sm text-gray-500">Articles en ligne</p>
+    </div>
+    <div class="border-x border-gray-100">
+      <p class="text-lg sm:text-2xl font-extrabold brand-text">100%</p>
+      <p class="text-xs sm:text-sm text-gray-500">Seconde main</p>
+    </div>
+    <div>
+      <p class="text-lg sm:text-2xl font-extrabold brand-text">Gratuit</p>
+      <p class="text-xs sm:text-sm text-gray-500">Pour déposer</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LISTINGS ============ -->
+<main id="listings" class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+    <h2 class="text-xl sm:text-2xl font-bold" id="listingsTitle">Tous les articles</h2>
+    <select id="sortSelect" class="text-sm border border-gray-200 rounded-full px-4 py-2 bg-white focus:outline-none">
+      <option value="recent">Plus récents</option>
+      <option value="price-asc">Prix croissant</option>
+      <option value="price-desc">Prix décroissant</option>
+    </select>
+  </div>
+
+  <div id="grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-5"></div>
+
+  <div id="emptyState" class="hidden flex-col items-center text-center py-16">
+    <div class="text-5xl mb-3">🔍</div>
+    <p class="text-lg font-semibold">Aucun article trouvé</p>
+    <p class="text-gray-500 text-sm mt-1">Essaie une autre catégorie ou dépose le premier article !</p>
+  </div>
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-white border-t border-gray-200 mt-6 pb-24 md:pb-8">
+  <div class="max-w-7xl mx-auto px-6 py-10 grid grid-cols-2 sm:grid-cols-4 gap-8">
+    <div>
+      <h4 class="font-bold mb-3">Vint'hess</h4>
+      <ul class="text-sm text-gray-500 space-y-2">
+        <li>Qui sommes-nous</li>
+        <li>Carrières</li>
+        <li>Presse</li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-bold mb-3">Aide</h4>
+      <ul class="text-sm text-gray-500 space-y-2">
+        <li>Comment ça marche</li>
+        <li>Sécurité</li>
+        <li>Assistance</li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-bold mb-3">Découvrir</h4>
+      <ul class="text-sm text-gray-500 space-y-2">
+        <li>Vêtements</li>
+        <li>Chaussures</li>
+        <li>Accessoires</li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-bold mb-3">Suis-nous</h4>
+      <ul class="text-sm text-gray-500 space-y-2">
+        <li>Instagram</li>
+        <li>TikTok</li>
+        <li>Facebook</li>
+      </ul>
+    </div>
+  </div>
+  <p class="text-center text-xs text-gray-400 pb-4">© 2026 Vint'hess — Ce site est une démo inspirée de Vinted.</p>
+</footer>
+
+<!-- ============ MOBILE BOTTOM NAV ============ -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex items-center justify-around py-2 z-40">
+  <button class="flex flex-col items-center gap-0.5 text-[var(--teal)] text-[11px] font-medium">
+    <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/></svg>
+    Accueil
+  </button>
+  <button id="mobileSearchNavBtn" class="flex flex-col items-center gap-0.5 text-gray-500 text-[11px] font-medium">
+    <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    Rechercher
+  </button>
+  <button id="openSellBtnMobile" class="flex flex-col items-center -mt-6">
+    <span class="w-14 h-14 rounded-full btn-teal flex items-center justify-center shadow-lg border-4 border-white">
+      <svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+    </span>
+  </button>
+  <button class="flex flex-col items-center gap-0.5 text-gray-500 text-[11px] font-medium">
+    <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg>
+    Messages
+  </button>
+  <button class="flex flex-col items-center gap-0.5 text-gray-500 text-[11px] font-medium">
+    <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+    Profil
+  </button>
+</nav>
+
+<!-- ============ SELL MODAL ============ -->
+<div id="sellModalOverlay" class="hidden fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center">
+  <div class="modal-enter bg-white w-full sm:max-w-2xl sm:rounded-3xl rounded-t-3xl max-h-[92vh] overflow-y-auto">
+    <div class="sticky top-0 bg-white flex items-center justify-between px-5 py-4 border-b border-gray-100 z-10">
+      <h3 class="text-lg font-bold">Déposer un article</h3>
+      <button id="closeSellModal" class="p-2 rounded-full hover:bg-gray-100">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+
+    <form id="sellForm" class="px-5 py-5 space-y-6">
+      <!-- Photos -->
+      <div>
+        <label class="block font-semibold mb-2">Photos <span class="text-gray-400 font-normal text-sm">(au moins 1 photo)</span></label>
+        <div id="uploadZone" class="upload-zone border-2 border-dashed border-gray-300 rounded-2xl p-6 text-center cursor-pointer transition">
+          <input type="file" id="fileInput" accept="image/*" multiple class="hidden">
+          <div class="flex flex-col items-center gap-2 text-gray-500">
+            <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path d="M4 16.5V18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1.5"/><path d="M7 9l5-5 5 5"/><path d="M12 4v13"/></svg>
+            <p class="text-sm"><span class="font-semibold text-[var(--teal)]">Clique pour ajouter</span> ou glisse tes photos ici</p>
+            <p class="text-xs text-gray-400">JPG, PNG — jusqu'à 10 photos</p>
+          </div>
+        </div>
+        <div id="previewGrid" class="grid grid-cols-4 sm:grid-cols-5 gap-2 mt-3"></div>
+        <p id="photoError" class="hidden text-red-500 text-xs mt-2">Ajoute au moins une photo de ton article.</p>
+      </div>
+
+      <!-- Title -->
+      <div>
+        <label class="block font-semibold mb-2" for="titleInput">Titre de l'annonce</label>
+        <input id="titleInput" required maxlength="60" type="text" placeholder="Ex : Robe fleurie Zara taille M" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[var(--teal)] ring-teal">
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label class="block font-semibold mb-2" for="descInput">Description</label>
+        <textarea id="descInput" required rows="4" placeholder="Décris ton article : matière, coupe, défauts éventuels..." class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm resize-none focus:border-[var(--teal)] ring-teal"></textarea>
+      </div>
+
+      <!-- Category -->
+      <div>
+        <label class="block font-semibold mb-2">Catégorie</label>
+        <div id="categoryGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-2"></div>
+      </div>
+
+      <!-- Brand / Size -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block font-semibold mb-2" for="brandInput">Marque</label>
+          <input id="brandInput" type="text" placeholder="Ex : Nike, Zara..." class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[var(--teal)] ring-teal">
+        </div>
+        <div>
+          <label class="block font-semibold mb-2" for="sizeInput">Taille</label>
+          <select id="sizeInput" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[var(--teal)] ring-teal bg-white">
+            <option value="Unique">Unique</option>
+            <option>XXS</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option>
+            <option>36</option><option>37</option><option>38</option><option>39</option><option>40</option><option>41</option><option>42</option><option>43</option><option>44</option><option>45</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Condition -->
+      <div>
+        <label class="block font-semibold mb-2">État de l'article</label>
+        <div id="conditionGrid" class="space-y-2"></div>
+      </div>
+
+      <!-- Price -->
+      <div>
+        <label class="block font-semibold mb-2" for="priceInput">Prix</label>
+        <div class="relative max-w-[160px]">
+          <input id="priceInput" required type="number" min="1" step="0.5" placeholder="0.00" class="w-full border border-gray-200 rounded-xl pl-4 pr-8 py-3 text-sm focus:border-[var(--teal)] ring-teal">
+          <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">€</span>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-teal w-full font-bold py-3.5 rounded-full text-base shadow-md">Publier l'article</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ PRODUCT DETAIL MODAL ============ -->
+<div id="detailModalOverlay" class="hidden fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center">
+  <div id="detailModalContent" class="modal-enter bg-white w-full sm:max-w-lg sm:rounded-3xl rounded-t-3xl max-h-[92vh] overflow-y-auto"></div>
+</div>
+
+<!-- Toast -->
+<div id="toastWrap" class="fixed top-4 left-1/2 -translate-x-1/2 z-[60] pointer-events-none"></div>
+
+<script>
+/* ===================== DATA ===================== */
+const CATEGORIES = [
+  {id:'toutes', label:'Toutes', emoji:'✨'},
+  {id:'femmes', label:'Femmes', emoji:'👗'},
+  {id:'hommes', label:'Hommes', emoji:'👕'},
+  {id:'chaussures', label:'Chaussures', emoji:'👟'},
+  {id:'sacs', label:'Sacs', emoji:'👜'},
+  {id:'accessoires', label:'Accessoires', emoji:'⌚'},
+  {id:'enfants', label:'Enfants', emoji:'🧸'},
+  {id:'maison', label:'Maison', emoji:'🏠'},
+];
+
+const CONDITIONS = [
+  {v:'Neuf avec étiquette', d:"Article jamais porté, avec l'étiquette d'origine."},
+  {v:'Neuf sans étiquette', d:"Article jamais porté, sans étiquette d'origine."},
+  {v:'Très bon état', d:"Article utilisé avec de très légers signes d'usure."},
+  {v:'Bon état', d:"Article utilisé avec des signes d'usure visibles."},
+  {v:'Satisfaisant', d:"Article avec défauts, précisés dans la description."},
+];
+
+const SEED_LISTINGS = [
+  {id:'s1', title:"Robe fleurie légère", brand:"Zara", category:"femmes", size:"M", condition:"Très bon état", price:15, desc:"Jolie robe d'été portée quelques fois seulement, aucun défaut, tissu fluide et agréable.", images:["https://images.pexels.com/photos/8743972/pexels-photo-8743972.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"], fav:false},
+  {id:'s2', title:"Veste en jean délavée", brand:"Levi's", category:"hommes", size:"L", condition:"Bon état", price:28, desc:"Veste en jean classique et intemporelle, quelques traces d'usure naturelle qui lui donnent du charme.", images:["https://images.pexels.com/photos/38561616/pexels-photo-38561616.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"], fav:false},
+  {id:'s3', title:"Baskets colorées édition limitée", brand:"Nike", category:"chaussures", size:"42", condition:"Neuf sans étiquette", price:65, desc:"Jamais portées en extérieur, essayées seulement à la maison. Boîte d'origine non incluse.", images:["https://images.pexels.com/photos/19882430/pexels-photo-19882430.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"], fav:false},
+  {id:'s4', title:"Sac à main en cuir camel", brand:"Coach", category:"sacs", size:"Unique", condition:"Très bon état", price:45, desc:"Superbe sac en cuir véritable, intérieur impeccable, très peu servi.", images:["https://images.pexels.com/photos/27127406/pexels-photo-27127406.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"], fav:false},
+  {id:'s5', title:"Montre élégante acier", brand:"Fossil", category:"accessoires", size:"Unique", condition:"Bon état", price:39, desc:"Montre en excellent état de fonctionnement, pile neuve installée récemment.", images:["https://images.pexels.com/photos/19915596/pexels-photo-19915596.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"], fav:false},
+  {id:'s6', title:"Vase artisanal en céramique", brand:"Maisons du Monde", category:"maison", size:"Unique", condition:"Neuf avec étiquette", price:22, desc:"Vase décoratif jamais utilisé, encore dans son emballage d'origine.", images:["https://images.pexels.com/photos/18633243/pexels-photo-18633243.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"], fav:false},
+  {id:'s7', title:"Lot streetwear jean & baskets", brand:"Divers", category:"hommes", size:"M", condition:"Bon état", price:35, desc:"Lot streetwear tendance, parfait pour compléter ta garde-robe automnale.", images:["https://images.pexels.com/photos/18533668/pexels-photo-18533668.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"], fav:false},
+  {id:'s8', title:"Pull rayé + jean assortis", brand:"Bershka", category:"femmes", size:"S", condition:"Très bon état", price:32, desc:"Ensemble complet parfait pour l'automne/hiver, porté une seule fois pour une occasion.", images:["https://images.pexels.com/photos/14706201/pexels-photo-14706201.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"], fav:false},
+  {id:'s9', title:"Jean brut style vintage", brand:"Vintage", category:"hommes", size:"L", condition:"Satisfaisant", price:18, desc:"Style vintage avec petites traces d'usage, prix imbattable pour ce look unique.", images:["https://images.pexels.com/photos/18533669/pexels-photo-18533669.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"], fav:false},
+];
+
+/* ===================== STATE ===================== */
+let listings = loadListings();
+let activeCategory = 'toutes';
+let searchQuery = '';
+let sortMode = 'recent';
+let uploadedPhotos = []; // {dataUrl}
+let selectedCondition = null;
+let selectedCategoryForm = null;
+
+function loadListings(){
+  try{
+    const saved = localStorage.getItem('vinthess_listings');
+    if(saved){
+      const parsed = JSON.parse(saved);
+      if(Array.isArray(parsed) && parsed.length) return parsed;
+    }
+  }catch(e){}
+  return SEED_LISTINGS.slice();
+}
+function saveListings(){
+  localStorage.setItem('vinthess_listings', JSON.stringify(listings));
+}
+
+/* ===================== RENDER CHIPS ===================== */
+const chipBar = document.getElementById('chipBar');
+CATEGORIES.forEach(cat=>{
+  const btn = document.createElement('button');
+  btn.className = 'chip flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-700' + (cat.id==='toutes' ? ' active' : '');
+  btn.dataset.cat = cat.id;
+  btn.innerHTML = `<span>${cat.emoji}</span><span>${cat.label}</span>`;
+  btn.addEventListener('click', ()=>{
+    activeCategory = cat.id;
+    document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  });
+  chipBar.appendChild(btn);
+});
+
+/* ===================== CATEGORY GRID (form) ===================== */
+const categoryGrid = document.getElementById('categoryGrid');
+CATEGORIES.filter(c=>c.id!=='toutes').forEach(cat=>{
+  const btn = document.createElement('button');
+  btn.type='button';
+  btn.className = 'flex flex-col items-center justify-center gap-1 border-2 border-gray-200 rounded-xl py-3 text-xs font-medium hover:border-[var(--teal)] transition';
+  btn.dataset.cat = cat.id;
+  btn.innerHTML = `<span class="text-xl">${cat.emoji}</span><span>${cat.label}</span>`;
+  btn.addEventListener('click', ()=>{
+    selectedCategoryForm = cat.id;
+    document.querySelectorAll('#categoryGrid button').forEach(b=>{
+      b.classList.remove('border-[var(--teal)]','bg-[#e6fbfa]');
+      b.classList.add('border-gray-200');
+    });
+    btn.classList.remove('border-gray-200');
+    btn.classList.add('border-[var(--teal)]','bg-[#e6fbfa]');
+  });
+  categoryGrid.appendChild(btn);
+});
+
+/* ===================== CONDITION GRID (form) ===================== */
+const conditionGrid = document.getElementById('conditionGrid');
+CONDITIONS.forEach(c=>{
+  const div = document.createElement('div');
+  div.className = 'condition-card flex items-center gap-3 border-2 border-gray-200 rounded-xl px-4 py-3 cursor-pointer transition';
+  div.dataset.value = c.v;
+  div.innerHTML = `<span class="cond-dot"></span><div><p class="font-semibold text-sm">${c.v}</p><p class="text-xs text-gray-500">${c.d}</p></div>`;
+  div.addEventListener('click', ()=>{
+    selectedCondition = c.v;
+    document.querySelectorAll('.condition-card').forEach(el=>el.classList.remove('selected'));
+    div.classList.add('selected');
+  });
+  conditionGrid.appendChild(div);
+});
+
+/* ===================== RENDER GRID ===================== */
+const grid = document.getElementById('grid');
+const emptyState = document.getElementById('emptyState');
+const listingsTitle = document.getElementById('listingsTitle');
+const statItems = document.getElementById('statItems');
+
+function conditionBadgeColor(cond){
+  if(cond.startsWith('Neuf')) return 'bg-emerald-100 text-emerald-700';
+  if(cond==='Très bon état') return 'bg-teal-100 text-teal-700';
+  if(cond==='Bon état') return 'bg-amber-100 text-amber-700';
+  return 'bg-gray-200 text-gray-700';
+}
+
+function render(){
+  let filtered = listings.filter(l=>{
+    const matchCat = activeCategory==='toutes' || l.category===activeCategory;
+    const q = searchQuery.trim().toLowerCase();
+    const matchSearch = !q || (l.title.toLowerCase().includes(q) || (l.brand||'').toLowerCase().includes(q) || l.desc.toLowerCase().includes(q));
+    return matchCat && matchSearch;
+  });
+
+  if(sortMode==='price-asc') filtered.sort((a,b)=>a.price-b.price);
+  else if(sortMode==='price-desc') filtered.sort((a,b)=>b.price-a.price);
+
+  const catLabel = CATEGORIES.find(c=>c.id===activeCategory)?.label || 'Tous';
+  listingsTitle.textContent = activeCategory==='toutes' ? 'Tous les articles' : catLabel;
+  statItems.textContent = listings.length;
+
+  grid.innerHTML = '';
+  if(filtered.length===0){
+    emptyState.classList.remove('hidden');
+    emptyState.classList.add('flex');
+    return;
+  }
+  emptyState.classList.add('hidden');
+  emptyState.classList.remove('flex');
+
+  filtered.forEach(item=>{
+    const card = document.createElement('div');
+    card.className = 'card-hover bg-white rounded-2xl overflow-hidden shadow-sm cursor-pointer group';
+    card.dataset.id = item.id;
+    card.innerHTML = `
+      <div class="relative aspect-square overflow-hidden bg-gray-100">
+        <img src="${item.images[0]}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+        <button class="fav-btn absolute top-2 right-2 bg-white/90 backdrop-blur rounded-full p-1.5 shadow ${item.fav?'liked':''}" data-id="${item.id}">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#374151" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
+        </button>
+        <span class="absolute bottom-2 left-2 text-[10px] font-semibold px-2 py-0.5 rounded-full ${conditionBadgeColor(item.condition)}">${item.condition}</span>
+      </div>
+      <div class="p-2.5 sm:p-3">
+        <p class="font-semibold text-sm truncate">${item.title}</p>
+        <p class="text-xs text-gray-500 truncate">${item.brand || 'Sans marque'} · Taille ${item.size}</p>
+        <p class="font-extrabold mt-1 text-[15px]">${Number(item.price).toFixed(2)} €</p>
+      </div>
+    `;
+    card.addEventListener('click', (e)=>{
+      if(e.target.closest('.fav-btn')) return;
+      openDetail(item.id);
+    });
+    grid.appendChild(card);
+  });
+}
+
+grid.addEventListener('click', (e)=>{
+  const favBtn = e.target.closest('.fav-btn');
+  if(!favBtn) return;
+  e.stopPropagation();
+  const id = favBtn.dataset.id;
+  const item = listings.find(l=>l.id===id);
+  item.fav = !item.fav;
+  saveListings();
+  favBtn.classList.toggle('liked', item.fav);
+});
+
+/* ===================== DETAIL MODAL ===================== */
+const detailOverlay = document.getElementById('detailModalOverlay');
+const detailContent = document.getElementById('detailModalContent');
+
+function openDetail(id){
+  const item = listings.find(l=>l.id===id);
+  if(!item) return;
+  detailContent.innerHTML = `
+    <div class="relative aspect-square bg-gray-100">
+      <img src="${item.images[0]}" class="w-full h-full object-cover">
+      <button id="closeDetailModal" class="absolute top-3 right-3 bg-white/90 rounded-full p-2 shadow">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+      <span class="absolute bottom-3 left-3 text-xs font-semibold px-3 py-1 rounded-full ${conditionBadgeColor(item.condition)}">${item.condition}</span>
+    </div>
+    <div class="p-5">
+      <div class="flex items-start justify-between gap-3 mb-1">
+        <h3 class="text-xl font-bold">${item.title}</h3>
+        <p class="text-2xl font-extrabold brand-text whitespace-nowrap">${Number(item.price).toFixed(2)} €</p>
+      </div>
+      <p class="text-sm text-gray-500 mb-4">${item.brand || 'Sans marque'} · Taille ${item.size} · ${CATEGORIES.find(c=>c.id===item.category)?.label || ''}</p>
+      <p class="text-sm text-gray-700 leading-relaxed mb-6">${item.desc}</p>
+      <div class="flex gap-3">
+        <button class="flex-1 btn-teal font-bold py-3 rounded-full">Acheter</button>
+        <button class="flex-1 border-2 border-gray-200 font-semibold py-3 rounded-full hover:border-[var(--teal)]">Message au vendeur</button>
+      </div>
+    </div>
+  `;
+  detailOverlay.classList.remove('hidden');
+  document.getElementById('closeDetailModal').addEventListener('click', closeDetail);
+}
+function closeDetail(){ detailOverlay.classList.add('hidden'); }
+detailOverlay.addEventListener('click', (e)=>{ if(e.target===detailOverlay) closeDetail(); });
+
+/* ===================== SEARCH ===================== */
+const searchInput = document.getElementById('searchInput');
+const searchInputMobile = document.getElementById('searchInputMobile');
+searchInput.addEventListener('input', e=>{ searchQuery = e.target.value; searchInputMobile.value=e.target.value; render(); });
+searchInputMobile.addEventListener('input', e=>{ searchQuery = e.target.value; searchInput.value=e.target.value; render(); });
+
+const mobileSearchWrap = document.getElementById('mobileSearchWrap');
+function toggleMobileSearch(){
+  mobileSearchWrap.classList.toggle('hidden');
+  if(!mobileSearchWrap.classList.contains('hidden')) searchInputMobile.focus();
+}
+document.getElementById('mobileSearchBtn').addEventListener('click', toggleMobileSearch);
+document.getElementById('mobileSearchNavBtn').addEventListener('click', toggleMobileSearch);
+
+/* ===================== SORT ===================== */
+document.getElementById('sortSelect').addEventListener('change', e=>{ sortMode = e.target.value; render(); });
+
+/* ===================== SELL MODAL ===================== */
+const sellModalOverlay = document.getElementById('sellModalOverlay');
+const sellForm = document.getElementById('sellForm');
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('fileInput');
+const previewGrid = document.getElementById('previewGrid');
+const photoError = document.getElementById('photoError');
+
+function openSellModal(){
+  sellModalOverlay.classList.remove('hidden');
+  document.body.style.overflow='hidden';
+}
+function closeSellModal(){
+  sellModalOverlay.classList.add('hidden');
+  document.body.style.overflow='';
+}
+['openSellBtnHeader','openSellBtnHero','openSellBtnMobile'].forEach(id=>{
+  document.getElementById(id).addEventListener('click', openSellModal);
+});
+document.getElementById('closeSellModal').addEventListener('click', closeSellModal);
+sellModalOverlay.addEventListener('click', e=>{ if(e.target===sellModalOverlay) closeSellModal(); });
+
+uploadZone.addEventListener('click', ()=>fileInput.click());
+uploadZone.addEventListener('dragover', e=>{ e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', ()=>uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e=>{
+  e.preventDefault();
+  uploadZone.classList.remove('dragover');
+  handleFiles(e.dataTransfer.files);
+});
+fileInput.addEventListener('change', e=>handleFiles(e.target.files));
+
+function handleFiles(fileList){
+  const files = Array.from(fileList).slice(0, 10 - uploadedPhotos.length);
+  files.forEach(file=>{
+    if(!file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = e=>{
+      uploadedPhotos.push(e.target.result);
+      renderPreviews();
+    };
+    reader.readAsDataURL(file);
+  });
+  fileInput.value='';
+}
+
+function renderPreviews(){
+  previewGrid.innerHTML='';
+  uploadedPhotos.forEach((src, idx)=>{
+    const box = document.createElement('div');
+    box.className='relative aspect-square rounded-xl overflow-hidden border border-gray-200';
+    box.innerHTML = `
+      <img src="${src}" class="w-full h-full object-cover">
+      ${idx===0 ? '<span class="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded">Couverture</span>':''}
+      <button type="button" data-idx="${idx}" class="removePhotoBtn absolute top-1 right-1 bg-black/60 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">✕</button>
+    `;
+    previewGrid.appendChild(box);
+  });
+  if(uploadedPhotos.length>0) photoError.classList.add('hidden');
+}
+previewGrid.addEventListener('click', e=>{
+  const btn = e.target.closest('.removePhotoBtn');
+  if(!btn) return;
+  uploadedPhotos.splice(Number(btn.dataset.idx),1);
+  renderPreviews();
+});
+
+/* ===================== FORM SUBMIT ===================== */
+sellForm.addEventListener('submit', e=>{
+  e.preventDefault();
+
+  if(uploadedPhotos.length===0){
+    photoError.classList.remove('hidden');
+    uploadZone.scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+  if(!selectedCategoryForm){
+    showToast('Sélectionne une catégorie 🙏', 'error');
+    return;
+  }
+  if(!selectedCondition){
+    showToast("Sélectionne l'état de l'article 🙏", 'error');
+    return;
+  }
+
+  const newItem = {
+    id: 'u' + Date.now(),
+    title: document.getElementById('titleInput').value.trim(),
+    desc: document.getElementById('descInput').value.trim(),
+    category: selectedCategoryForm,
+    brand: document.getElementById('brandInput').value.trim(),
+    size: document.getElementById('sizeInput').value,
+    condition: selectedCondition,
+    price: parseFloat(document.getElementById('priceInput').value),
+    images: uploadedPhotos.slice(),
+    fav: false,
+  };
+
+  listings.unshift(newItem);
+  saveListings();
+
+  // reset form
+  sellForm.reset();
+  uploadedPhotos = [];
+  renderPreviews();
+  selectedCondition = null;
+  selectedCategoryForm = null;
+  document.querySelectorAll('.condition-card').forEach(el=>el.classList.remove('selected'));
+  document.querySelectorAll('#categoryGrid button').forEach(b=>{
+    b.classList.remove('border-[var(--teal)]','bg-[#e6fbfa]');
+    b.classList.add('border-gray-200');
+  });
+
+  closeSellModal();
+  activeCategory = 'toutes';
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  document.querySelector('.chip[data-cat="toutes"]').classList.add('active');
+  render();
+  showToast('Ton article a été publié avec succès ! 🎉');
+});
+
+/* ===================== TOAST ===================== */
+function showToast(msg, type='success'){
+  const toast = document.createElement('div');
+  toast.className = `toast pointer-events-auto mb-2 px-5 py-3 rounded-full shadow-lg font-medium text-sm text-white ${type==='error' ? 'bg-red-500' : 'bg-[var(--ink)]'}`;
+  toast.textContent = msg;
+  document.getElementById('toastWrap').appendChild(toast);
+  setTimeout(()=>toast.remove(), 3000);
+}
+
+/* ===================== INIT ===================== */
+render();
+</script>
+</body>
+</html>
